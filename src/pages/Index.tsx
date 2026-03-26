@@ -19,7 +19,7 @@ const Index = () => {
     [activeId, updateChat]
   );
 
-  const { messages, isStreaming, sendMessage, clearChat, stopStreaming, storytellerMode, setStorytellerMode, endpoint, setEndpoint } = useChat({
+  const { messages, isStreaming, sendMessage, clearChat, stopStreaming, storytellerMode, setStorytellerMode, endpoint, setEndpoint, model, setModel } = useChat({
     initialMessages: activeSession?.messages,
     onMessagesChange: handleMessagesChange,
   });
@@ -57,7 +57,7 @@ const Index = () => {
           />
           <ChatMessages messages={messages} isStreaming={isStreaming} />
           <ChatInput onSend={handleSend} onStop={stopStreaming} disabled={isStreaming} isStreaming={isStreaming} />
-          <SettingsSheet open={settingsOpen} onOpenChange={setSettingsOpen} endpoint={endpoint} onEndpointChange={setEndpoint} />
+          <SettingsSheet open={settingsOpen} onOpenChange={setSettingsOpen} endpoint={endpoint} onEndpointChange={setEndpoint} model={model} onModelChange={setModel} />
         </div>
       </div>
     </SidebarProvider>

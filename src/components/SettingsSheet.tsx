@@ -9,15 +9,20 @@ interface SettingsSheetProps {
   onOpenChange: (open: boolean) => void;
   endpoint: string;
   onEndpointChange: (url: string) => void;
+  model: string;
+  onModelChange: (name: string) => void;
 }
 
-const SettingsSheet = ({ open, onOpenChange, endpoint, onEndpointChange }: SettingsSheetProps) => {
+const SettingsSheet = ({ open, onOpenChange, endpoint, onEndpointChange, model, onModelChange }: SettingsSheetProps) => {
   const [url, setUrl] = useState(endpoint);
+  const [modelName, setModelName] = useState(model);
 
   useEffect(() => { setUrl(endpoint); }, [endpoint]);
+  useEffect(() => { setModelName(model); }, [model]);
 
   const handleSave = () => {
     onEndpointChange(url);
+    onModelChange(modelName);
     onOpenChange(false);
   };
 
@@ -36,6 +41,16 @@ const SettingsSheet = ({ open, onOpenChange, endpoint, onEndpointChange }: Setti
               value={url}
               onChange={e => setUrl(e.target.value)}
               placeholder="http://..."
+              className="bg-secondary border-border"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="model" className="text-sm text-muted-foreground">AI Model Name</Label>
+            <Input
+              id="model"
+              value={modelName}
+              onChange={e => setModelName(e.target.value)}
+              placeholder="llama3"
               className="bg-secondary border-border"
             />
           </div>

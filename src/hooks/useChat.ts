@@ -44,6 +44,10 @@ export function useChat({ initialMessages, onMessagesChange }: UseChatOptions = 
   const setEndpoint = (url: string) => localStorage.setItem(STORAGE_KEY, url);
   const endpoint = getEndpoint();
 
+  const getModel = () => localStorage.getItem(MODEL_STORAGE_KEY) || DEFAULT_MODEL;
+  const setModel = (name: string) => localStorage.setItem(MODEL_STORAGE_KEY, name);
+  const model = getModel();
+
   const stopStreaming = useCallback(() => {
     abortRef.current?.abort();
   }, []);
@@ -68,7 +72,7 @@ export function useChat({ initialMessages, onMessagesChange }: UseChatOptions = 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'llama3.2:3b',
+          model: getModel(),
           messages: apiMessages.map(({ role, content }) => ({ role, content })),
           stream: true,
         }),
@@ -132,5 +136,7 @@ export function useChat({ initialMessages, onMessagesChange }: UseChatOptions = 
     setStorytellerMode,
     endpoint,
     setEndpoint,
+    model,
+    setModel,
   };
 }
