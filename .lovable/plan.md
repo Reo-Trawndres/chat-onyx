@@ -1,30 +1,57 @@
 
-## AI Chat Interface — Dark Luxury Design
 
-### Pages & Layout
-- Single-page chat app with a full-screen dark UI (near-black background, subtle accent colors, clean sans-serif typography)
-- Responsive: works seamlessly on mobile and desktop
+## NoirAI Professional Upgrade Plan
 
-### Features
+### Overview
+Add chat history sidebar, copy-to-clipboard on AI messages, stop-generation button, and enhanced markdown rendering — all matching the existing Noir aesthetic.
 
-1. **Settings Panel** — Slide-out drawer/modal with an input for "API Endpoint URL", saved to localStorage, default: `http://34.159.40.229:11434/api/chat`
+### Architecture
 
-2. **Chat Window** — Message list with distinct user/AI bubble styling, auto-scroll, markdown rendering for AI responses
+```text
+┌─────────────────────────────────────────┐
+│ SidebarProvider (wraps full layout)     │
+│ ┌──────────┐ ┌────────────────────────┐ │
+│ │ ChatSidebar │ │ Main Chat Area       │ │
+│ │ - New Chat  │ │ - ChatHeader         │ │
+│ │ - Session 1 │ │ - ChatMessages       │ │
+│ │ - Session 2 │ │ - ChatInput          │ │
+│ │ - ...       │ │                      │ │
+│ └──────────┘ └────────────────────────┘ │
+└─────────────────────────────────────────┘
+```
 
-3. **Streaming Responses** — Fetch API with `ReadableStream` reader, tokens appear word-by-word in real-time
+### Changes by Feature
 
-4. **Payload Format** — Sends `{"model": "llama3.2:3b", "messages": [...], "stream": true}` with full conversation history
+**1. Chat History (localStorage + Sidebar)**
+- Create `src/hooks/useChatHistory.ts` — manages an array of `{ id, title, messages, updatedAt }` sessions in localStorage. Provides `createChat`, `deleteChat`, `switchChat`, `updateChat`.
+- Refactor `useChat.ts` to accept/return a session ID and delegate persistence to `useChatHistory`.
+- Create `src/components/ChatSidebar.tsx` — uses shadcn Sidebar with collapsible="offcanvas" on mobile, "icon" on desktop. Lists past chats sorted by recency. "New Chat" button at top. Active chat highlighted. Delete button per chat.
+- Wrap layout in `SidebarProvider` in `Index.tsx`. Add `SidebarTrigger` to `ChatHeader`.
 
-5. **Storyteller Mode** — Toggle switch in header/settings. When ON, prepends a system message for creative writing mode. Visual indicator when active
+**2. Enhanced Markdown**
+- Already using `react-markdown`. Add `remark-gfm` plugin for tables/strikethrough. Refine prose styles in `ChatMessages.tsx` to ensure bold, italics, lists, and code blocks render cleanly with the Noir palette.
 
-### UI Components
-- Header bar: app title, Storyteller toggle, settings gear icon
-- Message input bar fixed at bottom with send button
-- Settings drawer using shadcn Sheet component
-- Messages rendered with `react-markdown`
+**3. Copy Button on AI Messages**
+- In `ChatMessages.tsx`, add a small `Copy` icon (lucide `Copy`/`Check`) below each assistant message bubble. On click, copy `msg.content` to clipboard and briefly show a check icon. Styled as subtle muted-foreground, visible on hover or always on mobile.
 
-### Design Tokens
-- Background: very dark gray/charcoal
-- Text: off-white/cream
-- Accent: gold or warm amber for highlights
-- Subtle borders, generous spacing, refined feel
+**4. Stop Button**
+- Expose `stopStreaming` from `useChat` (calls `abortRef.current?.abort()`).
+- In `ChatInput.tsx`, when `isStreaming` is true, replace the Send button with a Stop button (square icon, destructive-ish styling). On click, call `stopStreaming`.
+
+**5. Aesthetic Consistency**
+- Sidebar uses `bg-sidebar-background`, `text-sidebar-foreground`, gold accent for active state — all tokens already defined in `index.css`.
+- All new buttons use `ghost` variant with `text-muted-foreground hover:text-foreground`.
+- Chat session titles auto-generated from first user message (truncated).
+
+### Files to Create/Edit
+| File | Action |
+|---|---|
+| `src/hooks/useChatHistory.ts` | Create — session CRUD + localStorage |
+| `src/hooks/useChat.ts` | Edit — add stopStreaming, integrate with history |
+| `src/components/ChatSidebar.tsx` | Create — sidebar with chat list |
+| `src/components/ChatMessages.tsx` | Edit — copy button, remark-gfm, prose fixes |
+| `src/components/ChatInput.tsx` | Edit — stop button when streaming |
+| `src/components/ChatHeader.tsx` | Edit — add SidebarTrigger |
+| `src/pages/Index.tsx` | Edit — wrap in SidebarProvider, wire history |
+| `package.json` | Add `remark-gfm` dependency |
+
