@@ -1,16 +1,27 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from 'react';
+import { useChat } from '@/hooks/useChat';
+import ChatHeader from '@/components/ChatHeader';
+import ChatMessages from '@/components/ChatMessages';
+import ChatInput from '@/components/ChatInput';
+import SettingsSheet from '@/components/SettingsSheet';
 
-// IMPORTANT: Fully REPLACE this with your own code
-const PlaceholderIndex = () => {
-  // PLACEHOLDER: Replace this entire return statement with the user's app.
-  // The inline background color is intentionally not part of the design system.
+const Index = () => {
+  const { messages, isStreaming, sendMessage, clearChat, storytellerMode, setStorytellerMode, endpoint, setEndpoint } = useChat();
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
   return (
-    <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: '#fcfbf8' }}>
-      <img data-lovable-blank-page-placeholder="REMOVE_THIS" src="/placeholder.svg" alt="Your app will live here!" />
+    <div className="flex flex-col h-dvh bg-background">
+      <ChatHeader
+        storytellerMode={storytellerMode}
+        onStorytellerToggle={setStorytellerMode}
+        onSettingsOpen={() => setSettingsOpen(true)}
+        onClear={clearChat}
+      />
+      <ChatMessages messages={messages} isStreaming={isStreaming} />
+      <ChatInput onSend={sendMessage} disabled={isStreaming} />
+      <SettingsSheet open={settingsOpen} onOpenChange={setSettingsOpen} endpoint={endpoint} onEndpointChange={setEndpoint} />
     </div>
   );
 };
-
-const Index = PlaceholderIndex;
 
 export default Index;
