@@ -7,6 +7,8 @@ export interface Message {
 
 const DEFAULT_ENDPOINT = 'http://34.159.40.229:11434/api/chat';
 const STORAGE_KEY = 'ai-chat-endpoint';
+const MODEL_STORAGE_KEY = 'ai-chat-model';
+const DEFAULT_MODEL = 'llama3';
 
 const STORYTELLER_SYSTEM: Message = {
   role: 'system',
