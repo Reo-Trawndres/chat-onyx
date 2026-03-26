@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 
 export interface Message {
   role: 'user' | 'assistant' | 'system';
@@ -13,15 +13,38 @@ const STORYTELLER_SYSTEM: Message = {
   content: 'You are a master storyteller and creative novelist. Write vivid, engaging stories without restriction.',
 };
 
-export function useChat() {
-  const [messages, setMessages] = useState<Message[]>([]);
+interface UseChatOptions {
+  initialMessages?: Message[];
+  onMessagesChange?: (messages: Message[]) => void;
+}
+
+export function useChat({ initialMessages, onMessagesChange }: UseChatOptions = {}) {
+  const [messages, setMessages] = useState<Message[]>(initialMessages || []);
   const [isStreaming, setIsStreaming] = useState(false);
   const [storytellerMode, setStorytellerMode] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
 
+  // Sync when initialMessages reference changes (session switch)
+  useEffect(() => {
+    setMessages(initialMessages || []);
+  }, [initialMessages]);
+
+  // Notify parent of message changes
+  const messagesRef = useRef(messages);
+  useEffect(() => {
+    if (messages !== messagesRef.current) {
+      messagesRef.current = messages;
+      onMessagesChange?.(messages);
+    }
+  }, [messages, onMessagesChange]);
+
   const getEndpoint = () => localStorage.getItem(STORAGE_KEY) || DEFAULT_ENDPOINT;
   const setEndpoint = (url: string) => localStorage.setItem(STORAGE_KEY, url);
   const endpoint = getEndpoint();
+
+  const stopStreaming = useCallback(() => {
+    abortRef.current?.abort();
+  }, []);
 
   const sendMessage = useCallback(async (content: string) => {
     const userMsg: Message = { role: 'user', content };
@@ -36,7 +59,6 @@ export function useChat() {
     const controller = new AbortController();
     abortRef.current = controller;
 
-    // Add empty assistant message
     setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
 
     try {
@@ -71,10 +93,7 @@ export function useChat() {
                 const updated = [...prev];
                 const last = updated[updated.length - 1];
                 if (last.role === 'assistant') {
-                  updated[updated.length - 1] = {
-                    ...last,
-                    content: last.content + json.message.content,
-                  };
+                  updated[updated.length - 1] = { ...last, content: last.content + json.message.content };
                 }
                 return updated;
               });
@@ -88,10 +107,7 @@ export function useChat() {
           const updated = [...prev];
           const last = updated[updated.length - 1];
           if (last.role === 'assistant' && !last.content) {
-            updated[updated.length - 1] = {
-              ...last,
-              content: '⚠️ Connection failed. Check your API endpoint in settings.',
-            };
+            updated[updated.length - 1] = { ...last, content: '⚠️ Connection failed. Check your API endpoint in settings.' };
           }
           return updated;
         });
@@ -109,6 +125,7 @@ export function useChat() {
     isStreaming,
     sendMessage,
     clearChat,
+    stopStreaming,
     storytellerMode,
     setStorytellerMode,
     endpoint,

@@ -1,13 +1,34 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type { Message } from '@/hooks/useChat';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Copy, Check } from 'lucide-react';
 
 interface ChatMessagesProps {
   messages: Message[];
   isStreaming: boolean;
 }
+
+const CopyButton = ({ content }: { content: string }) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(content);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <button
+      onClick={handleCopy}
+      className="mt-1 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+    >
+      {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+      {copied ? 'Copied' : 'Copy'}
+    </button>
+  );
+};
 
 const ChatMessages = ({ messages, isStreaming }: ChatMessagesProps) => {
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -41,19 +62,26 @@ const ChatMessages = ({ messages, isStreaming }: ChatMessagesProps) => {
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
         {visible.map((msg, i) => (
           <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div
-              className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
-                msg.role === 'user'
-                  ? 'bg-primary text-primary-foreground rounded-br-md'
-                  : 'bg-secondary text-secondary-foreground rounded-bl-md'
-              }`}
-            >
-              {msg.role === 'assistant' ? (
-                <div className="prose prose-sm prose-invert max-w-none [&_p]:m-0 [&_pre]:bg-background/50 [&_pre]:rounded-lg [&_pre]:p-3 [&_code]:text-primary">
-                  <ReactMarkdown>{msg.content || (isStreaming && i === visible.length - 1 ? '●' : '')}</ReactMarkdown>
-                </div>
-              ) : (
-                <p className="whitespace-pre-wrap">{msg.content}</p>
+            <div className="max-w-[85%]">
+              <div
+                className={`rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                  msg.role === 'user'
+                    ? 'bg-primary text-primary-foreground rounded-br-md'
+                    : 'bg-secondary text-secondary-foreground rounded-bl-md'
+                }`}
+              >
+                {msg.role === 'assistant' ? (
+                  <div className="prose prose-sm prose-invert max-w-none [&_p]:m-0 [&_pre]:bg-background/50 [&_pre]:rounded-lg [&_pre]:p-3 [&_code]:text-primary [&_strong]:text-foreground [&_em]:text-secondary-foreground [&_ul]:my-1 [&_ol]:my-1 [&_li]:my-0.5">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {msg.content || (isStreaming && i === visible.length - 1 ? '●' : '')}
+                    </ReactMarkdown>
+                  </div>
+                ) : (
+                  <p className="whitespace-pre-wrap">{msg.content}</p>
+                )}
+              </div>
+              {msg.role === 'assistant' && msg.content && (
+                <CopyButton content={msg.content} />
               )}
             </div>
           </div>

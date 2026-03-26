@@ -1,13 +1,15 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send } from 'lucide-react';
+import { Send, Square } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface ChatInputProps {
   onSend: (msg: string) => void;
+  onStop: () => void;
   disabled: boolean;
+  isStreaming: boolean;
 }
 
-const ChatInput = ({ onSend, disabled }: ChatInputProps) => {
+const ChatInput = ({ onSend, onStop, disabled, isStreaming }: ChatInputProps) => {
   const [value, setValue] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -45,14 +47,25 @@ const ChatInput = ({ onSend, disabled }: ChatInputProps) => {
           rows={1}
           className="flex-1 resize-none bg-secondary text-foreground rounded-xl px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 border-0"
         />
-        <Button
-          onClick={handleSubmit}
-          disabled={disabled || !value.trim()}
-          size="icon"
-          className="h-10 w-10 rounded-xl shrink-0"
-        >
-          <Send className="h-4 w-4" />
-        </Button>
+        {isStreaming ? (
+          <Button
+            onClick={onStop}
+            size="icon"
+            variant="destructive"
+            className="h-10 w-10 rounded-xl shrink-0"
+          >
+            <Square className="h-4 w-4" />
+          </Button>
+        ) : (
+          <Button
+            onClick={handleSubmit}
+            disabled={disabled || !value.trim()}
+            size="icon"
+            className="h-10 w-10 rounded-xl shrink-0"
+          >
+            <Send className="h-4 w-4" />
+          </Button>
+        )}
       </div>
     </div>
   );

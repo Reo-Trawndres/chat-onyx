@@ -1,6 +1,7 @@
 import { Settings, BookOpen, Trash2 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 
 interface ChatHeaderProps {
   storytellerMode: boolean;
@@ -11,9 +12,12 @@ interface ChatHeaderProps {
 
 const ChatHeader = ({ storytellerMode, onStorytellerToggle, onSettingsOpen, onClear }: ChatHeaderProps) => (
   <header className="flex items-center justify-between px-4 py-3 border-b border-border bg-card/60 backdrop-blur-md sticky top-0 z-10">
-    <h1 className="text-lg font-medium tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
-      Noir<span className="text-primary">AI</span>
-    </h1>
+    <div className="flex items-center gap-2">
+      <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
+      <h1 className="text-lg font-medium tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
+        Noir<span className="text-primary">AI</span>
+      </h1>
+    </div>
 
     <div className="flex items-center gap-3">
       <div className="flex items-center gap-2">
